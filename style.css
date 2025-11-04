@@ -1,0 +1,20 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: #333;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+canvas {
+  background-color: #2b2b2b; /* dark asphalt color */
+  border: 2px solid #555;
+  width: 800px;
+  height: 600px;
+}
