@@ -13,8 +13,7 @@ body {
 }
 
 canvas {
-  background-color: #2b2b2b; /* dark asphalt color */
-  border: 2px solid #555;
+  background-color: #fffefe; /* dark asphalt color */
   width: 800px;
   height: 600px;
 }
