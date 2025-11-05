@@ -75,7 +75,7 @@ class Car {
         ctx.fillRect(-this.width / 2 + 3, -this.height / 2, this.width - 6, this.height * 0.3);
 
         // Left wheel
-        ctx.fillStyle = "#34495e";
+        ctx.fillStyle = "#000000ff";
         ctx.fillRect(-this.width / 2 - 2, -this.height / 2 + 5, 2, this.height * 0.25);
         
         // Right wheel
