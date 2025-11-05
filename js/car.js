@@ -14,6 +14,9 @@ class Car {
     }
 
     update() {
+        this.#moment();
+    }
+    #moment() {
         if (this.controls.forward) {
             this.speed += this.acceleration;
         }
