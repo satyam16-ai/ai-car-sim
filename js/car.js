@@ -9,11 +9,11 @@ class Car {
         this.friction = 0.05;
         this.maxSpeed = 3;
         this.angle = 0;
+        this.flip = 1;
         this.controls = new Controls();
     }
 
     update() {
-        // Handle acceleration
         if (this.controls.forward) {
             this.speed += this.acceleration;
         }
@@ -21,7 +21,6 @@ class Car {
             this.speed -= this.acceleration;
         }
 
-        // Clamp speed to max values
         if (this.speed > this.maxSpeed) {
             this.speed = this.maxSpeed;
         }
@@ -29,7 +28,6 @@ class Car {
             this.speed = -this.maxSpeed / 2;
         }
 
-        // Apply friction
         if (Math.abs(this.speed) > this.friction) {
             if (this.speed > 0) {
                 this.speed -= this.friction;
@@ -40,20 +38,21 @@ class Car {
             this.speed = 0;
         }
 
-        // Determine steering direction based on forward/reverse
-        const flip = this.speed > 0 ? 1 : -1;
+        if (this.speed > 0) {
+            this.flip = 1;
+        } else if (this.speed < 0) {
+            this.flip = -1;
+        }
 
-        // Only allow turning when moving
         if (Math.abs(this.speed) > 0.5) {
             if (this.controls.left) {
-                this.angle -= 0.03 * flip;
+                this.angle -= 0.03 * this.flip;
             }
             if (this.controls.right) {
-                this.angle += 0.03 * flip;
+                this.angle += 0.03 * this.flip;
             }
         }
 
-        // Update position based on angle and speed
         this.x += Math.sin(this.angle) * this.speed;
         this.y -= Math.cos(this.angle) * this.speed;
     }
