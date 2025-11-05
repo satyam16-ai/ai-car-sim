@@ -1,26 +1,9 @@
 const canvas = document.getElementById("gameCanvas");
+canvas.height = window.innerHeight;
+canvas.width = 200;
 const ctx = canvas.getContext("2d");
 
-
-function resizeCanvas() {
-  const dpr = window.devicePixelRatio || 1;
-
-  const cssWidth = window.innerWidth;
-  const cssHeight = window.innerHeight;
-
-  canvas.style.width = cssWidth + "px";
-  canvas.style.height = cssHeight + "px";
-
-  canvas.width = Math.round(cssWidth * dpr);
-  canvas.height = Math.round(cssHeight * dpr);
-  canvas.fillRect = ""
-
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-
-  drawRoad(cssWidth, cssHeight);
-}
+const car = new Car(100, 100, 30, 50);
+car.draw(ctx);
 
 
-window.addEventListener("resize", resizeCanvas, { passive: true });
-
-resizeCanvas();
