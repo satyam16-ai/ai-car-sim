@@ -11,10 +11,12 @@ class Car {
         this.angle = 0;
         this.flip = 1;
         this.controls = new Controls();
+        this.sensor = new Sensor(this);
     }
 
-    update() {
+    update(roadBorders) {
         this.#moment();
+        this.sensor.update(roadBorders);
     }
     #moment() {
         if (this.controls.forward) {
@@ -66,28 +68,24 @@ class Car {
         ctx.translate(this.x + this.width / 2, this.y + this.height / 2);
         ctx.rotate(this.angle);
 
-        // Car body
         ctx.fillStyle = "#3498db";
         ctx.fillRect(-this.width / 2, -this.height / 2, this.width, this.height);
 
-        // Windshield (front indicator)
         ctx.fillStyle = "#2c3e50";
         ctx.fillRect(-this.width / 2 + 3, -this.height / 2, this.width - 6, this.height * 0.3);
 
-        // Left wheel
         ctx.fillStyle = "#000000ff";
         ctx.fillRect(-this.width / 2 - 2, -this.height / 2 + 5, 2, this.height * 0.25);
         
-        // Right wheel
         ctx.fillRect(this.width / 2, -this.height / 2 + 5, 2, this.height * 0.25);
 
-        // Left rear wheel
         ctx.fillRect(-this.width / 2 - 2, this.height / 2 - 5 - this.height * 0.25, 2, this.height * 0.25);
         
-        // Right rear wheel
         ctx.fillRect(this.width / 2, this.height / 2 - 5 - this.height * 0.25, 2, this.height * 0.25);
 
         ctx.restore();
+        
+        this.sensor.draw(ctx);
     }
     
 }
