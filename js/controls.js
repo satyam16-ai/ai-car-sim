@@ -1,11 +1,15 @@
 class Controls {
-    constructor() {
+    constructor(type = "KEYS") {
         this.forward = false;
         this.left = false;
         this.right = false;
         this.reverse = false;
 
-        this.init();
+        if (type === "KEYS") {
+            this.init();
+        } else if (type === "DUMMY") {
+            this.forward = true;
+        }
     }
 
     init() {

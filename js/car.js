@@ -1,5 +1,5 @@
 class Car {
-    constructor(x, y, width, height) {
+    constructor(x, y, width, height, controlType = "KEYS", maxSpeed = 5) {
         this.x = x;
         this.y = y;
         this.width = width;
@@ -7,21 +7,33 @@ class Car {
         this.speed = 0;
         this.acceleration = 0.2;
         this.friction = 0.05;
-        this.maxSpeed = 5;
+        this.maxSpeed = maxSpeed;
         this.angle = 0;
         this.flip = 1;
         this.damaged = false;
-        this.controls = new Controls();
-        this.sensor = new Sensor(this);
+        
+        this.controlType = controlType;
+        
+        if (controlType !== "DUMMY") {
+            this.sensor = new Sensor(this);
+        }
+        this.controls = new Controls(controlType);
+        
+        // Traffic cars start moving immediately
+        if (controlType === "DUMMY") {
+            this.speed = this.maxSpeed;
+        }
     }
 
-    update(roadBorders) {
+    update(roadBorders, traffic = []) {
         if (!this.damaged) {
             this.#moment();
         }
         this.polygon = this.#createPolygon();
-        this.damaged = this.#assessDamage(roadBorders);
-        this.sensor.update(roadBorders);
+        this.damaged = this.#assessDamage(roadBorders, traffic);
+        if (this.sensor) {
+            this.sensor.update(roadBorders, traffic);
+        }
     }
     #createPolygon() {
         const points = [];
@@ -58,21 +70,21 @@ class Car {
         return points;
     }
 
-    #assessDamage(roadBorders) {
+    #assessDamage(roadBorders, traffic = []) {
+        // Check collision with road borders (convert line segments to thin polygons)
         for (let i = 0; i < roadBorders.length; i++) {
-            // Check each edge of the car polygon against the border segment
-            for (let j = 0; j < this.polygon.length; j++) {
-                const touch = getIntersection(
-                    this.polygon[j],
-                    this.polygon[(j + 1) % this.polygon.length],
-                    roadBorders[i][0],
-                    roadBorders[i][1]
-                );
-                if (touch) {
-                    return true;
-                }
+            if (polysIntersect(this.polygon, roadBorders[i])) {
+                return true;
             }
         }
+        
+        // Check collision with traffic cars
+        for (let i = 0; i < traffic.length; i++) {
+            if (traffic[i].polygon && polysIntersect(this.polygon, traffic[i].polygon)) {
+                return true;
+            }
+        }
+        
         return false;
     }
 
@@ -125,7 +137,7 @@ class Car {
         if (this.damaged) {
             ctx.fillStyle = "black";
         } else {
-            ctx.fillStyle = "#3498db";
+            ctx.fillStyle = this.controlType === "DUMMY" ? "#e74c3c" : "#3498db";
         }
 
         ctx.save();
@@ -150,7 +162,9 @@ class Car {
 
         ctx.restore();
         
-        this.sensor.draw(ctx);
+        if (this.sensor) {
+            this.sensor.draw(ctx);
+        }
     }
     
 }
