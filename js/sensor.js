@@ -1,10 +1,12 @@
 class Sensor { 
     constructor(car) {
         this.car = car;
-        this.rayCount = 10;
+        this.rayCount = 8;  // Forward sensors
+        this.backRayCount = 4;  // Backward sensors
         this.rayLength = 150;
-        this.raySpread = Math.PI;  // Wider spread to see side lanes better
+        this.raySpread = Math.PI * 0.75;  // 135 degrees forward
         this.rays = [];
+        this.rayAngles = [];  // Store ray angles for network input
         this.readings = [];
         // Initialize rays immediately
         this.#castRays();
@@ -65,12 +67,19 @@ class Sensor {
 
     #castRays() {
         this.rays = [];
+        this.rayAngles = [];
+        
+        // Forward sensors (8 rays)
         for (let i = 0; i < this.rayCount; i++) {
             const rayAngle = lerp(
                 this.raySpread / 2,
                 -this.raySpread / 2,
                 this.rayCount == 1 ? 0.5 : i / (this.rayCount - 1)
             ) + this.car.angle;
+            
+            // Store normalized angle (-1 to 1, where 0 is straight ahead)
+            const normalizedAngle = (rayAngle - this.car.angle) / (Math.PI / 2);
+            this.rayAngles.push(normalizedAngle);
             
             const start = { 
                 x: this.car.x + this.car.width / 2, 
@@ -82,10 +91,35 @@ class Sensor {
             };
             this.rays.push([start, end]);
         }
+        
+        // Backward sensors (4 rays) - to detect cars behind
+        for (let i = 0; i < this.backRayCount; i++) {
+            const backSpread = Math.PI * 0.5;  // 90 degrees backward
+            const rayAngle = Math.PI + lerp(  // Add PI to point backward
+                backSpread / 2,
+                -backSpread / 2,
+                this.backRayCount == 1 ? 0.5 : i / (this.backRayCount - 1)
+            ) + this.car.angle;
+            
+            // Store normalized angle (for backward sensors)
+            const normalizedAngle = -1.5;  // Mark as backward sensor
+            this.rayAngles.push(normalizedAngle);
+            
+            const start = { 
+                x: this.car.x + this.car.width / 2, 
+                y: this.car.y + this.car.height / 2 
+            };
+            const end = {
+                x: start.x + Math.sin(rayAngle) * this.rayLength * 0.6,  // Shorter range
+                y: start.y - Math.cos(rayAngle) * this.rayLength * 0.6
+            };
+            this.rays.push([start, end]);
+        }
     }
 
     draw(ctx) {
-        for (let i = 0; i < this.rayCount; i++) {
+        const totalRays = this.rayCount + this.backRayCount;
+        for (let i = 0; i < totalRays; i++) {
             // Safety check: ensure ray exists
             if (!this.rays[i]) continue;
             
@@ -94,9 +128,12 @@ class Sensor {
                 end = this.readings[i];
             }
             
+            // Different color for backward sensors
+            const isBackwardSensor = i >= this.rayCount;
+            
             ctx.beginPath();
             ctx.lineWidth = 2;
-            ctx.strokeStyle = "yellow";
+            ctx.strokeStyle = isBackwardSensor ? "cyan" : "yellow";
             ctx.moveTo(
                 this.rays[i][0].x,
                 this.rays[i][0].y

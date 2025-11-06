@@ -8,6 +8,7 @@ class Car {
         this.acceleration = 0.2;
         this.friction = 0.05;
         this.maxSpeed = maxSpeed;
+        this.baseMaxSpeed = maxSpeed;  // Store base speed
         this.angle = 0;
         this.flip = 1;
         this.damaged = false;
@@ -19,16 +20,18 @@ class Car {
         if (controlType !== "DUMMY") {
             this.sensor = new Sensor(this);
             if (this.useBrain) {
+                // Network receives: 12 sensor offsets (8 forward + 4 back) + 12 angles = 24 inputs
+                const totalSensors = this.sensor.rayCount + this.sensor.backRayCount;
                 this.brain = new Network(
-                    [this.sensor.rayCount, 10, 4]  // More hidden neurons for better learning
+                    [totalSensors * 2, 16, 4]  // 24 inputs, 16 hidden, 4 outputs
                 );
-                // Bias the output layer towards forward movement
+                // Strong bias towards forward movement for better initial behavior
                 if (this.brain.levels.length > 0) {
                     const outputLevel = this.brain.levels[this.brain.levels.length - 1];
-                    outputLevel.biases[0] = -0.5;  // Forward bias (easier to activate)
-                    outputLevel.biases[1] = 0.3;   // Left (harder to activate)
-                    outputLevel.biases[2] = 0.3;   // Right (harder to activate)
-                    outputLevel.biases[3] = 0.8;   // Reverse (much harder)
+                    outputLevel.biases[0] = -2.0;  // Very strong forward bias
+                    outputLevel.biases[1] = 0.5;   // Left (moderate)
+                    outputLevel.biases[2] = 0.5;   // Right (moderate)
+                    outputLevel.biases[3] = 2.0;   // Reverse (very hard)
                 }
             }
         }
@@ -44,93 +47,48 @@ class Car {
         if (this.sensor) {
             this.sensor.update(roadBorders, traffic);
             if (this.useBrain && !this.damaged) {
+                // Prepare network inputs: sensor offsets + ray angles
                 const offsets = this.sensor.readings.map(
                     s => s == null ? 0 : 1 - s.offset
                 );
-                const outputs = Network.feedForward(offsets, this.brain);
+                const angles = this.sensor.rayAngles;  // Already normalized (-1 to 1)
                 
-                // Analyze sensor readings for smart behavior
-                const frontClear = this.#isFrontClear(offsets);
-                const leftClear = this.#isSideClear(offsets, 'left');
-                const rightClear = this.#isSideClear(offsets, 'right');
+                // Combine offsets and angles as network input
+                const networkInputs = [...offsets, ...angles];
+                const outputs = Network.feedForward(networkInputs, this.brain);
                 
-                // Reset all controls first
+                // Dynamic speed based on situation
+                const frontSensors = offsets.slice(0, this.sensor.rayCount);
+                const hasObstacleAhead = frontSensors.some(s => s > 0.5);
+                
+                if (!hasObstacleAhead) {
+                    this.maxSpeed = this.baseMaxSpeed * 2;  // Double speed when clear
+                } else {
+                    this.maxSpeed = this.baseMaxSpeed;  // Normal speed near obstacles
+                }
+                
+                // Let neural network have full control
                 this.controls.forward = outputs[0];
-                this.controls.left = 0;
-                this.controls.right = 0;
                 this.controls.reverse = outputs[3];
                 
-                // If front blocked but sides are clear, prefer changing lanes
-                if (!frontClear && (leftClear || rightClear)) {
-                    if (leftClear && rightClear) {
-                        // Both sides clear, use neural network decision
-                        if (outputs[1] > outputs[2]) {
-                            this.controls.left = 1;
-                        } else if (outputs[2] > outputs[1]) {
-                            this.controls.right = 1;
-                        }
-                    } else if (leftClear) {
+                // Mutual exclusion for left/right - only allow one at a time
+                if (outputs[1] > 0.5 && outputs[2] > 0.5) {
+                    // Both want to activate, choose the stronger one
+                    if (outputs[1] > outputs[2]) {
                         this.controls.left = 1;
-                    } else if (rightClear) {
+                        this.controls.right = 0;
+                    } else {
+                        this.controls.left = 0;
                         this.controls.right = 1;
                     }
                 } else {
-                    // Normal neural network control - only strongest direction
-                    if (outputs[1] === 1 && outputs[2] === 1) {
-                        // Both want to activate, pick randomly to break tie
-                        if (Math.random() > 0.5) {
-                            this.controls.left = 1;
-                        } else {
-                            this.controls.right = 1;
-                        }
-                    } else if (outputs[1] === 1) {
-                        this.controls.left = 1;
-                    } else if (outputs[2] === 1) {
-                        this.controls.right = 1;
-                    }
-                }
-                
-                // Increase speed when path is clear
-                if (frontClear) {
-                    this.maxSpeed = 3.5;  // Boost speed
-                } else {
-                    this.maxSpeed = 2;    // Slow down when obstacle ahead
+                    this.controls.left = outputs[1];
+                    this.controls.right = outputs[2];
                 }
             }
         }
     }
     
-    #isFrontClear(offsets) {
-        // Check center sensors (middle 40% of sensors)
-        const centerStart = Math.floor(offsets.length * 0.3);
-        const centerEnd = Math.floor(offsets.length * 0.7);
-        
-        for (let i = centerStart; i < centerEnd; i++) {
-            if (offsets[i] > 0.5) {  // Obstacle detected (close)
-                return false;
-            }
-        }
-        return true;
-    }
-    
-    #isSideClear(offsets, side) {
-        // Check left or right sensors
-        let start, end;
-        if (side === 'left') {
-            start = 0;
-            end = Math.floor(offsets.length * 0.3);
-        } else {
-            start = Math.floor(offsets.length * 0.7);
-            end = offsets.length;
-        }
-        
-        for (let i = start; i < end; i++) {
-            if (offsets[i] > 0.3) {  // Obstacle detected
-                return false;
-            }
-        }
-        return true;
-    }
     #createPolygon() {
         const points = [];
         const halfWidth = this.width / 2;

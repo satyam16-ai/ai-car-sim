@@ -76,7 +76,26 @@ function generateTraffic() {
     return traffic;
 }
 
-const traffic = generateTraffic();
+let traffic = generateTraffic();
+
+function addMoreTraffic() {
+    // Find the furthest traffic car (most negative y)
+    const furthestY = Math.min(...traffic.map(t => t.y));
+    
+    // Add new traffic ahead
+    const lanes = [0, 1, 2];
+    for (let i = 0; i < 5; i++) {  // Add 5 new cars
+        const lane = lanes[Math.floor(Math.random() * lanes.length)];
+        const y = furthestY - 200 - i * 200 - Math.random() * 200;
+        const speed = 1 + Math.random();
+        traffic.push(
+            new Car(road.getLaneCenter(lane), y, 30, 50, "DUMMY", speed)
+        );
+    }
+    
+    // Remove traffic that's too far behind (positive y > 500)
+    traffic = traffic.filter(t => t.y < 500);
+}
 
 function generateCars(N) {
     const cars = [];
@@ -296,10 +315,20 @@ window.deleteBrain = deleteBrain;
 // Initial brain list update
 updateBrainList();
 
+let trafficRegenTimer = 0;
+
 animate();
+
 function animate(time) {
     // Only update cars if training has started
     if (trainingStarted) {
+        // Continuously add more traffic
+        trafficRegenTimer++;
+        if (trafficRegenTimer > 100) {  // Every 100 frames
+            addMoreTraffic();
+            trafficRegenTimer = 0;
+        }
+        
         for (let i = 0; i < traffic.length; i++) {
             traffic[i].update(road.borders, []);
         }
@@ -307,16 +336,22 @@ function animate(time) {
         for (let i = 0; i < cars.length; i++) {
             cars[i].update(road.borders, traffic);
             
-            // Calculate fitness: distance traveled + bonus for overtaking
+            // Calculate fitness: distance traveled + speed bonus + overtaking bonus
             if (!cars[i].damaged) {
-                cars[i].fitness = -cars[i].y;  // Negative y = forward progress
+                // Base fitness: distance traveled (negative y = forward)
+                cars[i].fitness = -cars[i].y;
                 
-                // Bonus for overtaking traffic cars
+                // Speed bonus: reward cars that maintain higher speed
+                cars[i].fitness += cars[i].speed * 5;
+                
+                // Overtaking bonus: big reward for passing traffic
+                let overtakeCount = 0;
                 for (let j = 0; j < traffic.length; j++) {
                     if (cars[i].y < traffic[j].y) {
-                        cars[i].fitness += 10;  // +10 points per car overtaken
+                        overtakeCount++;
                     }
                 }
+                cars[i].fitness += overtakeCount * 20;  // +20 points per car overtaken
             }
         }
         
