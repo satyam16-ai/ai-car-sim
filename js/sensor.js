@@ -1,11 +1,13 @@
 class Sensor { 
     constructor(car) {
         this.car = car;
-        this.rayCount = 5;
+        this.rayCount = 10;
         this.rayLength = 150;
-        this.raySpread = Math.PI / 2;
+        this.raySpread = Math.PI;  // Wider spread to see side lanes better
         this.rays = [];
         this.readings = [];
+        // Initialize rays immediately
+        this.#castRays();
     }
 
     update(roadBorders, traffic = []) {
@@ -84,6 +86,9 @@ class Sensor {
 
     draw(ctx) {
         for (let i = 0; i < this.rayCount; i++) {
+            // Safety check: ensure ray exists
+            if (!this.rays[i]) continue;
+            
             let end = this.rays[i][1];
             if (this.readings[i]) {
                 end = this.readings[i];

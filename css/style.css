@@ -1,48 +1,381 @@
 body {
     margin: 0;
-    background-color: lightgrey;
-    text-align: center;
     overflow: hidden;
+    background-color: #2c3e50;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 #gameCanvas {
-    background-color: #82868a;
+    background: linear-gradient(#333, #555);
+    display: inline-block;
 }
 
-#settingsPanel {
+#networkCanvas {
+    background-color: #1a1a1a;
+    display: inline-block;
+}
+
+#aiPanel {
     position: fixed;
-    top: 20px;
-    right: 20px;
-    background-color: rgba(255, 255, 255, 0.9);
-    padding: 15px;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    top: 5px;
+    right: 5px;
+    background: rgba(0, 0, 0, 0.85);
+    padding: 8px;
+    border-radius: 5px;
+    color: white;
     font-family: Arial, sans-serif;
-    min-width: 200px;
+    min-width: 140px;
 }
 
-#settingsPanel h3 {
-    margin: 0 0 15px 0;
-    font-size: 16px;
-    color: #2c3e50;
-}
-
-.setting {
-    margin-bottom: 12px;
-}
-
-.setting label {
-    display: block;
+#aiPanel h3 {
+    margin: 0 0 6px 0;
     font-size: 12px;
-    margin-bottom: 5px;
-    color: #34495e;
+    text-align: center;
 }
 
-.setting input[type="range"] {
+#aiPanel button {
     width: 100%;
+    padding: 6px;
+    margin: 3px 0;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 10px;
+    font-weight: bold;
+    transition: all 0.2s;
 }
 
-.setting span {
+#saveBtn {
+    background-color: #27ae60;
+    color: white;
+}
+
+#saveBtn:hover {
+    background-color: #229954;
+    transform: scale(1.02);
+}
+
+#discardBtn {
+    background-color: #e74c3c;
+    color: white;
+}
+
+#discardBtn:hover {
+    background-color: #c0392b;
+    transform: scale(1.02);
+}
+
+#resetBtn {
+    background-color: #f39c12;
+    color: white;
+}
+
+#resetBtn:hover {
+    background-color: #d68910;
+    transform: scale(1.02);
+}
+
+#trainingPanel {
+    position: fixed;
+    top: 180px;
+    left: 5px;
+    background: rgba(0, 0, 0, 0.85);
+    padding: 8px;
+    border-radius: 5px;
+    color: white;
+    font-family: Arial, sans-serif;
+    min-width: 180px;
+}
+
+#trainingPanel h3 {
+    margin: 0 0 6px 0;
+    font-size: 12px;
+    text-align: center;
+    color: #9b59b6;
+}
+
+.primary-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    font-size: 11px !important;
+    padding: 8px !important;
+    box-shadow: 0 2px 10px rgba(102, 126, 234, 0.4);
+}
+
+.primary-btn:hover {
+    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%) !important;
+    box-shadow: 0 3px 12px rgba(102, 126, 234, 0.6);
+    transform: scale(1.02) !important;
+}
+
+.training-control {
+    margin: 6px 0;
+}
+
+.training-control label {
+    display: block;
+    font-size: 10px;
+    color: #bdc3c7;
+    margin-bottom: 3px;
+}
+
+.training-control input[type="number"] {
+    width: 100%;
+    padding: 4px;
+    border: none;
+    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    font-size: 11px;
+}
+
+.training-control input[type="range"] {
+    width: 65%;
+    vertical-align: middle;
+}
+
+.training-control span {
+    display: inline-block;
+    width: 30%;
+    text-align: right;
+    color: #2ecc71;
     font-weight: bold;
+    font-size: 10px;
+}
+
+#trainingPanel button {
+    width: 100%;
+    padding: 6px;
+    margin: 4px 0;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 10px;
+    font-weight: bold;
+    transition: all 0.2s;
+}
+
+#nextGenBtn {
+    background-color: #9b59b6;
+    color: white;
+}
+
+#nextGenBtn:hover {
+    background-color: #8e44ad;
+    transform: scale(1.02);
+}
+
+#restartBtn {
+    background-color: #3498db;
+    color: white;
+}
+
+#restartBtn:hover {
+    background-color: #2980b9;
+    transform: scale(1.02);
+}
+
+.training-toggle {
+    margin-top: 15px;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+    text-align: center;
+}
+
+.training-toggle label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 13px;
+}
+
+.training-toggle input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+#statsPanel {
+    position: fixed;
+    top: 5px;
+    left: 5px;
+    background: rgba(0, 0, 0, 0.85);
+    padding: 8px;
+    border-radius: 5px;
+    color: white;
+    font-family: Arial, sans-serif;
+    min-width: 180px;
+}
+
+#statsPanel h3 {
+    margin: 0 0 6px 0;
+    font-size: 12px;
+    text-align: center;
     color: #3498db;
+}
+
+.stat-item {
+    display: flex;
+    justify-content: space-between;
+    margin: 4px 0;
+    padding: 3px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 3px;
+    font-size: 10px;
+}
+
+.stat-label {
+    color: #bdc3c7;
+}
+
+.stat-value {
+    color: #2ecc71;
+    font-weight: bold;
+}
+
+#brainPanel {
+    position: fixed;
+    bottom: 5px;
+    right: 5px;
+    background: rgba(0, 0, 0, 0.85);
+    padding: 8px;
+    border-radius: 5px;
+    color: white;
+    font-family: Arial, sans-serif;
+    min-width: 180px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+#brainPanel h3 {
+    margin: 0 0 6px 0;
+    font-size: 12px;
+    text-align: center;
+    color: #e74c3c;
+}
+
+.brain-item {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 5px;
+    margin: 4px 0;
+    border-radius: 3px;
+    border-left: 2px solid #e74c3c;
+    font-size: 9px;
+}
+
+.brain-item strong {
+    display: block;
+    color: #3498db;
+    margin-bottom: 2px;
+    font-size: 10px;
+}
+
+.brain-actions {
+    display: flex;
+    gap: 3px;
+    margin-top: 4px;
+}
+
+.brain-actions button {
+    flex: 1;
+    padding: 3px;
+    border: none;
+    border-radius: 2px;
+    cursor: pointer;
+    font-size: 9px;
+    transition: all 0.2s;
+}
+
+.brain-actions button:first-child {
+    background: #2ecc71;
+    color: white;
+}
+
+.brain-actions button:first-child:hover {
+    background: #27ae60;
+}
+
+.brain-actions button:last-child {
+    background: #e74c3c;
+    color: white;
+}
+
+.brain-actions button:last-child:hover {
+    background: #c0392b;
+}
+
+#brainList {
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.brain-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px;
+    margin: 5px 0;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+.brain-name {
+    color: #ecf0f1;
+    flex: 1;
+}
+
+.brain-actions {
+    display: flex;
+    gap: 5px;
+}
+
+.brain-load-btn, .brain-delete-btn {
+    padding: 4px 8px;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: bold;
+}
+
+.brain-load-btn {
+    background-color: #3498db;
+    color: white;
+}
+
+.brain-load-btn:hover {
+    background-color: #2980b9;
+}
+
+.brain-delete-btn {
+    background-color: #e74c3c;
+    color: white;
+}
+
+.brain-delete-btn:hover {
+    background-color: #c0392b;
+}
+
+/* Scrollbar styling */
+#brainList::-webkit-scrollbar {
+    width: 6px;
+}
+
+#brainList::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+}
+
+#brainList::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 3px;
+}
+
+#brainList::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
 }
