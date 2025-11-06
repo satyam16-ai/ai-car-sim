@@ -1,10 +1,13 @@
 const canvas = document.getElementById("gameCanvas");
 canvas.height = window.innerHeight;
-canvas.width = 200;
+
+const laneCount = 10;
+const laneWidth = 60;
+canvas.width = laneCount * laneWidth;
 
 const ctx = canvas.getContext("2d");
 
-const road = new Road(canvas.width / 2, canvas.width, 4);
+const road = new Road(canvas.width / 2, canvas.width * 0.9, laneCount);
 
 const car = new Car(road.getLaneCenter(1) - 15, 100, 30, 50);
 
