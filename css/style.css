@@ -8,3 +8,41 @@ body {
 #gameCanvas {
     background-color: #82868a;
 }
+
+#settingsPanel {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    font-family: Arial, sans-serif;
+    min-width: 200px;
+}
+
+#settingsPanel h3 {
+    margin: 0 0 15px 0;
+    font-size: 16px;
+    color: #2c3e50;
+}
+
+.setting {
+    margin-bottom: 12px;
+}
+
+.setting label {
+    display: block;
+    font-size: 12px;
+    margin-bottom: 5px;
+    color: #34495e;
+}
+
+.setting input[type="range"] {
+    width: 100%;
+}
+
+.setting span {
+    font-weight: bold;
+    color: #3498db;
+}
