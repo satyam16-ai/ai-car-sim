@@ -10,37 +10,70 @@ class Car {
         this.maxSpeed = 5;
         this.angle = 0;
         this.flip = 1;
+        this.damaged = false;
         this.controls = new Controls();
         this.sensor = new Sensor(this);
     }
 
     update(roadBorders) {
-        this.#moment();
+        if (!this.damaged) {
+            this.#moment();
+        }
         this.polygon = this.#createPolygon();
+        this.damaged = this.#assessDamage(roadBorders);
         this.sensor.update(roadBorders);
     }
     #createPolygon() {
         const points = [];
-        const rad = Math.hypot(this.width, this.height) / 2;
-        const alpha = Math.atan2(this.width, this.height);
+        const halfWidth = this.width / 2;
+        const halfHeight = this.height / 2;
+        const cos = Math.cos(this.angle);
+        const sin = Math.sin(this.angle);
+        
+        // Adjust for the car's center point (matching the draw translation)
+        const centerX = this.x + this.width / 2;
+        const centerY = this.y + this.height / 2;
+        
+        // Top-left corner
         points.push({
-            x: this.x - Math.sin(this.angle - alpha) * rad,
-            y: this.y - Math.cos(this.angle - alpha) * rad   
+            x: centerX + (-halfWidth * cos - (-halfHeight) * sin),
+            y: centerY + (-halfWidth * sin + (-halfHeight) * cos)
         });
+        // Top-right corner
         points.push({
-            x: this.x - Math.sin(this.angle + alpha) * rad,
-            y: this.y - Math.cos(this.angle + alpha) * rad
+            x: centerX + (halfWidth * cos - (-halfHeight) * sin),
+            y: centerY + (halfWidth * sin + (-halfHeight) * cos)
         });
+        // Bottom-right corner
         points.push({
-            x: this.x - Math.sin(Math.PI + this.angle - alpha) * rad,
-            y: this.y - Math.cos(Math.PI + this.angle - alpha) * rad
-        }); 
+            x: centerX + (halfWidth * cos - halfHeight * sin),
+            y: centerY + (halfWidth * sin + halfHeight * cos)
+        });
+        // Bottom-left corner
         points.push({
-            x: this.x - Math.sin(Math.PI + this.angle + alpha) * rad,
-            y: this.y - Math.cos(Math.PI + this.angle + alpha) * rad
+            x: centerX + (-halfWidth * cos - halfHeight * sin),
+            y: centerY + (-halfWidth * sin + halfHeight * cos)
         });
 
         return points;
+    }
+
+    #assessDamage(roadBorders) {
+        for (let i = 0; i < roadBorders.length; i++) {
+            // Check each edge of the car polygon against the border segment
+            for (let j = 0; j < this.polygon.length; j++) {
+                const touch = getIntersection(
+                    this.polygon[j],
+                    this.polygon[(j + 1) % this.polygon.length],
+                    roadBorders[i][0],
+                    roadBorders[i][1]
+                );
+                if (touch) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     #moment() {
@@ -89,24 +122,31 @@ class Car {
 
 
     draw(ctx) {
+        if (this.damaged) {
+            ctx.fillStyle = "black";
+        } else {
+            ctx.fillStyle = "#3498db";
+        }
+
         ctx.save();
         ctx.translate(this.x + this.width / 2, this.y + this.height / 2);
         ctx.rotate(this.angle);
 
-        ctx.fillStyle = "#3498db";
         ctx.fillRect(-this.width / 2, -this.height / 2, this.width, this.height);
 
-        ctx.fillStyle = "#2c3e50";
-        ctx.fillRect(-this.width / 2 + 3, -this.height / 2, this.width - 6, this.height * 0.3);
+        if (!this.damaged) {
+            ctx.fillStyle = "#2c3e50";
+            ctx.fillRect(-this.width / 2 + 3, -this.height / 2, this.width - 6, this.height * 0.3);
 
-        ctx.fillStyle = "#000000ff";
-        ctx.fillRect(-this.width / 2 - 2, -this.height / 2 + 5, 2, this.height * 0.25);
-        
-        ctx.fillRect(this.width / 2, -this.height / 2 + 5, 2, this.height * 0.25);
+            ctx.fillStyle = "#000000ff";
+            ctx.fillRect(-this.width / 2 - 2, -this.height / 2 + 5, 2, this.height * 0.25);
+            
+            ctx.fillRect(this.width / 2, -this.height / 2 + 5, 2, this.height * 0.25);
 
-        ctx.fillRect(-this.width / 2 - 2, this.height / 2 - 5 - this.height * 0.25, 2, this.height * 0.25);
-        
-        ctx.fillRect(this.width / 2, this.height / 2 - 5 - this.height * 0.25, 2, this.height * 0.25);
+            ctx.fillRect(-this.width / 2 - 2, this.height / 2 - 5 - this.height * 0.25, 2, this.height * 0.25);
+            
+            ctx.fillRect(this.width / 2, this.height / 2 - 5 - this.height * 0.25, 2, this.height * 0.25);
+        }
 
         ctx.restore();
         
