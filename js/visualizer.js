@@ -19,6 +19,10 @@ class Visualizer {
                 );
             
             ctx.setLineDash([7, 3]);
+            
+            // Add input labels for first layer (sensor inputs)
+            const inputLabels = i == 0 ? ['Sensors (8 fwd + 4 back)', 'Ray Angles'] : [];
+            
             Visualizer.drawLevel(ctx, network.levels[i],
                 left, levelTop,
                 width, levelHeight,

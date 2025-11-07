@@ -4,7 +4,7 @@ canvas.width = 200;
 
 const networkCanvas = document.getElementById("networkCanvas");
 networkCanvas.height = window.innerHeight;
-networkCanvas.width = 300;
+networkCanvas.width = 500;  // Wider canvas for better node visibility
 
 const ctx = canvas.getContext("2d");
 const networkCtx = networkCanvas.getContext("2d");
